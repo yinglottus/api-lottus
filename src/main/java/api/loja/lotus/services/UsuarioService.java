@@ -1,7 +1,9 @@
 package api.loja.lotus.services;
 
+import api.loja.lotus.dtos.usuario.UsuarioAtualizarDTO;
 import api.loja.lotus.dtos.usuario.UsuarioRequestDTO;
 import api.loja.lotus.dtos.usuario.UsuarioResponseDTO;
+import api.loja.lotus.exceptions.SenhaIncorretaException;
 import api.loja.lotus.exceptions.UsuarioExistenteException;
 import api.loja.lotus.mappers.UsuarioMapper;
 import api.loja.lotus.models.Usuario;
@@ -40,11 +42,26 @@ public class UsuarioService {
     }
 
     @Transactional
-    public UsuarioResponseDTO atualizarUsuario() {
+    public UsuarioResponseDTO atualizarUsuario(UsuarioAtualizarDTO dto) {
 
         var usuario = usuarioLogado.usuarioLogado();
 
+        if (passwordEncoder.matches(dto.senhaAtual(), usuario.getSenha())) {
+            throw new SenhaIncorretaException("Senha incorreta!");
+        }
 
+        if (usuarioRepository.existsByEmailAndNotId(dto.email(), usuario.getId())) {
+            throw new UsuarioExistenteException("Usuário existente com esse email!");
+        }
+
+        usuario.setNome(dto.nome());
+        usuario.setEmail(dto.email());
+
+        if (dto.senhaNova() != null) {
+            usuario.setSenha(passwordEncoder.encode(dto.senhaNova()));
+        }
+
+        return UsuarioMapper.toDTO(usuario);
     }
 
 }
