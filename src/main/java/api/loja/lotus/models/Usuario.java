@@ -37,6 +37,14 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     private RoleUser role = RoleUser.ROLE_USER;
 
+    @OneToOne(
+            mappedBy = "usuario",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private Carrinho carrinho;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(
