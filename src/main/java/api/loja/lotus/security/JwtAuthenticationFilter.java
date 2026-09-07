@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -23,7 +23,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     protected void doFilterInternal(
@@ -48,7 +48,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                var userDetails = userDetailsService.loadUserByUsername(username);
+                var userDetails = customUserDetailsService.loadUserByUsername(username);
 
                 var authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -67,9 +67,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (ExpiredJwtException e) {
 
             log.warn("JWT expirado!");
+
+        } catch (UsernameNotFoundException ex) {
+
+            log.warn("Usuário JWT não encontrado!");
+
         } catch (JwtException | IllegalArgumentException e) {
 
             log.warn("JWT inválido: {}", e.getMessage());
+
         }
 
         filterChain.doFilter(request, response);

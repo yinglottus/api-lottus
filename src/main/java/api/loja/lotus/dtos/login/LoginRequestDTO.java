@@ -11,7 +11,7 @@ public record LoginRequestDTO(
         String email,
 
         @NotBlank
-        @Size(min = 8, max = 20)
+        @Size(min = 8, max = 20, message = "Senha deve ser entre 8 a 20 caracteres!")
         String senha
 ) {
 }
