@@ -11,8 +11,5 @@ CREATE TABLE produtos(
     ativo BOOLEAN NOT NULL DEFAULT TRUE,
 
     CONSTRAINT chk_produto_preco
-        CHECK (preco >= 0),
-
-    CONSTRAINT chk_preco_quantidade
-        CHECK (quantidade >= 0)
+        CHECK (preco >= 0)
 );

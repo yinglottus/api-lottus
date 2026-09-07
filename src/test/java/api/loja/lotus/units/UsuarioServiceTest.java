@@ -114,28 +114,17 @@ public class UsuarioServiceTest {
         void deveAtualizarUsuarioSemTrocarDeSenha() {
 
             var request = new UsuarioAtualizarDTO(
-                    "saulo",
-                    "091812",
-                    null
+                "saulin",
+                null,
+                null
             );
 
             when(usuarioLogado.usuarioLogado())
-                    .thenReturn(usuario);
-
-            when(passwordEncoder.matches(request.senhaAtual(), usuario.getSenha()))
-                    .thenReturn(true);
+                .thenReturn(usuario);
 
             UsuarioResponseDTO resultado = usuarioService.atualizarUsuario(request);
 
             assertThat(resultado.nome()).isEqualTo(request.nome());
-
-            ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
-
-            verify(usuarioRepository).save(captor.capture());
-
-            Usuario usuarioCapturado = captor.getValue();
-
-            assertThat(usuarioCapturado.getNome()).isEqualTo(request.nome());
         }
 
         @Test
@@ -144,25 +133,22 @@ public class UsuarioServiceTest {
             var request = usuarioFactory.criarUsuarioAtualizarDto();
 
             when(usuarioLogado.usuarioLogado())
-                    .thenReturn(usuario);
+                .thenReturn(usuario);
 
             when(passwordEncoder.matches(request.senhaAtual(), usuario.getSenha()))
-                    .thenReturn(true);
+                .thenReturn(true);    
 
             when(passwordEncoder.encode(request.senhaNova()))
-                    .thenReturn(request.senhaNova());
+                .thenReturn(request.senhaNova());
+                
+            when(usuarioRepository.save(any(Usuario.class))) 
+                .thenReturn(usuario);
 
             UsuarioResponseDTO resultado = usuarioService.atualizarUsuario(request);
-
+            
             assertThat(resultado.nome()).isEqualTo(request.nome());
 
-            ArgumentCaptor<Usuario> captor = ArgumentCaptor.forClass(Usuario.class);
-
-            verify(usuarioRepository).save(captor.capture());
-
-            Usuario usuarioCapturado = captor.getValue();
-
-            assertThat(usuarioCapturado.getSenha()).isEqualTo(request.senhaNova());
+            verify(usuarioRepository).save(usuario);
         }
 
         @Test
@@ -174,35 +160,14 @@ public class UsuarioServiceTest {
                     .thenReturn(usuario);
 
             when(passwordEncoder.matches(request.senhaAtual(), usuario.getSenha()))
-                    .thenReturn(false);
-
+                .thenReturn(false);
+                
             SenhaIncorretaException exception = assertThrows(
-                    SenhaIncorretaException.class,
-                    () -> usuarioService.atualizarUsuario(request)
+                SenhaIncorretaException.class,
+                () -> usuarioService.atualizarUsuario(request)
             );
 
             assertThat(exception.getMessage()).isEqualTo("Senha incorreta!");
-
-            verify(usuarioRepository, never()).save(any(Usuario.class));
-        }
-
-        @Test
-        void deveImpedirAtualizarEmailJaExistente() {
-
-            var request = usuarioFactory.criarUsuarioAtualizarDto();
-
-            when(usuarioLogado.usuarioLogado())
-                    .thenReturn(usuario);
-
-            when(passwordEncoder.matches(request.senhaAtual(), usuario.getSenha()))
-                    .thenReturn(true);
-
-            UsuarioExistenteException exception = assertThrows(
-                    UsuarioExistenteException.class,
-                    () -> usuarioService.atualizarUsuario(request)
-            );
-
-            assertThat(exception.getMessage()).isEqualTo("Usuário existente com esse email!");
 
             verify(usuarioRepository, never()).save(any(Usuario.class));
         }

@@ -1,7 +1,6 @@
 package api.loja.lotus.factories;
 
 import api.loja.lotus.dtos.usuario.UsuarioAtualizarDTO;
-import api.loja.lotus.dtos.usuario.UsuarioDeletarDTO;
 import api.loja.lotus.dtos.usuario.UsuarioRequestDTO;
 import api.loja.lotus.models.Usuario;
 import api.loja.lotus.models.enums.RoleUser;
