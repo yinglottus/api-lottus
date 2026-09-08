@@ -70,9 +70,7 @@ public class UsuarioService {
     }
 
     @Transactional(readOnly = true)
-    public Page<UsuarioResponseDTO> buscarTodosUsuarios(
-            Pageable pageable)
-    {
+    public Page<UsuarioResponseDTO> buscarTodosUsuarios(Pageable pageable) {
 
         var usuario = usuarioLogado.usuarioLogado();
 
@@ -82,10 +80,10 @@ public class UsuarioService {
 
         Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
 
-        return usuarios
-                .map(UsuarioMapper::toDTO);
+        return usuarios.map(UsuarioMapper::toDTO);
     }
 
+    @Transactional(readOnly = true)
     public UsuarioResponseDTO buscarMeusDados() {
 
         var usuario = usuarioLogado.usuarioLogado();
@@ -129,7 +127,5 @@ public class UsuarioService {
         if (!passwordEncoder.matches(senha, usuario.getSenha())) {
             throw new SenhaIncorretaException("Senha incorreta!");
         }
-
     }
-
 }
