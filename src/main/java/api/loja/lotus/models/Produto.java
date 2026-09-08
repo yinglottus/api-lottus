@@ -29,8 +29,9 @@ public class Produto {
     @Column(nullable = false)
     private BigDecimal preco;
 
+    @Builder .Default
     @Column(nullable = false)
-    private boolean ativo;
+    private boolean ativo = true;
 
     @Builder.Default
     @OneToMany(
