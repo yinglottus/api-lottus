@@ -29,7 +29,7 @@ public class Produto {
     @Column(nullable = false)
     private BigDecimal preco;
 
-    @Builder .Default
+    @Builder.Default
     @Column(nullable = false)
     private boolean ativo = true;
 
