@@ -37,7 +37,7 @@ public class ProdutoController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProdutoResponseDTO> criarProduto(
         @RequestPart("produto") ProdutoRequestDTO dto,
-        @RequestPart("imagens") List<MultipartFile> imagens
+        @RequestPart(required = false, value = "imagens") List<MultipartFile> imagens
     )
     {
         return ResponseEntity.status(HttpStatus.CREATED).body(produtoService.criarProduto(dto, imagens));
