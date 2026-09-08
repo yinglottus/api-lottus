@@ -86,6 +86,7 @@ public class UsuarioService {
                 .map(UsuarioMapper::toDTO);
     }
 
+    @Transactional(readOnly = true)
     public UsuarioResponseDTO buscarMeusDados() {
 
         var usuario = usuarioLogado.usuarioLogado();
