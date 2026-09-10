@@ -20,8 +20,9 @@ public class Carrinho {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     @Column(name = "sub_total", nullable = false)
-    private BigDecimal subTotal;
+    private BigDecimal subTotal = BigDecimal.ZERO;
 
     @Column(name = "cart_token", unique = true)
     private String cartToken;
