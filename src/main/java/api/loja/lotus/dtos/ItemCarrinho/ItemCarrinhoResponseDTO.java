@@ -1,6 +1,9 @@
 package api.loja.lotus.dtos.ItemCarrinho;
 
 import java.math.BigDecimal;
+import java.util.List;
+
+import api.loja.lotus.dtos.imagem.ProdutoImagemResponseDTO;
 
 public record ItemCarrinhoResponseDTO(
 
@@ -10,11 +13,11 @@ public record ItemCarrinhoResponseDTO(
 
     String nomeProduto,
 
+    List<ProdutoImagemResponseDTO> imagens,
+
     BigDecimal precoUnitario,
 
-    Integer quantidade,
-    
-    BigDecimal subTotal
+    Integer quantidade
 ) {
     
 }

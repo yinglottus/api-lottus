@@ -26,7 +26,7 @@ import api.loja.lotus.services.ProdutoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor 
+@RequiredArgsConstructor    
 @RestController 
 @RequestMapping("/produto")
 public class ProdutoController {
@@ -47,7 +47,7 @@ public class ProdutoController {
     @PostMapping(value = "/{produtoId}/adicionar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProdutoResponseDTO> adicionarImagensProduto(
         @RequestPart("imagens") List<MultipartFile> imagens,
-        @PathVariable("produtoId") Long produtoId
+        @PathVariable("produtoId") Long produtoId   
     ) 
     {
         return ResponseEntity.ok(produtoService.adicionarImagensProduto(imagens, produtoId));
