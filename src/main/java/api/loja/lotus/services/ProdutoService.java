@@ -53,20 +53,24 @@ public class ProdutoService {
         Produto produto = ProdutoMapper.toEntity(dto);
 
         produtoRepository.save(produto);
+        
+        if (imagens != null && !imagens.isEmpty()) {
 
-        for (MultipartFile imagem : imagens) {
+            for (MultipartFile imagem : imagens) {
             
-            String nomeArquivo = supabaseStorageService.upload(imagem);
+                String nomeArquivo = supabaseStorageService.upload(imagem);
 
-            var produtoImagem = new ProdutoImagem();
+                var produtoImagem = new ProdutoImagem();
 
-            produtoImagem.setImagemUrl(nomeArquivo);
-            produtoImagem.setProduto(produto);
+                produtoImagem.setImagemUrl(nomeArquivo);
+                produtoImagem.setProduto(produto);
 
-            produtoImagemRepository.save(produtoImagem);
+                produtoImagemRepository.save(produtoImagem);
 
-            log.info("Imagem enviada para o Supabase: {}", nomeArquivo);
-        }
+                log.info("Imagem enviada para o Supabase: {}", nomeArquivo);
+            }
+
+        } 
 
         return ProdutoMapper.toDTO(produto);
     }

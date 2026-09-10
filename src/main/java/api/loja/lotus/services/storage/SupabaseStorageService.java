@@ -29,7 +29,7 @@ public class SupabaseStorageService {
 
     public String upload(MultipartFile arquivo) {
 
-        try {
+        try {           
             
             String imagemUrl = UUID.randomUUID() + "-" + arquivo.getOriginalFilename();
 

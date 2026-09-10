@@ -11,6 +11,8 @@ public record CarrinhoResponseDTO(
     
     BigDecimal subTotal,
 
+    String cartToken,
+
     List<ItemCarrinhoResponseDTO> itens
 ) {
     
