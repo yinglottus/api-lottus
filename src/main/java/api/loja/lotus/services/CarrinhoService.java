@@ -114,7 +114,8 @@ public class CarrinhoService {
     @Transactional(readOnly = true)
     public CarrinhoResponseDTO buscarCarrinhoDoUsuario(
         String cartToken
-    ) {
+    ) 
+    {
 
         Carrinho carrinho = obterCarrinhoExistente(cartToken);
 
@@ -206,6 +207,10 @@ public class CarrinhoService {
         Optional<ItemCarrinho> itemExistente = carrinho.getItens().stream()
             .filter(item -> item.getProduto().getId().equals(produto.getId()))
             .findFirst();
+
+        if (itemExistente.get().getQuantidade() >= 5) {
+            throw new BusinessException("Máximo de 5 por item!");
+        }
 
         itemExistente.ifPresent(item -> item.setQuantidade(item.getQuantidade() + 1));
 
