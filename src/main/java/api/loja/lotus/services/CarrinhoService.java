@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import api.loja.lotus.dtos.ItemCarrinho.ItemCarrinhoRequestDTO;
 import api.loja.lotus.dtos.carrinho.CarrinhoResponseDTO;
+import api.loja.lotus.exceptions.BusinessException;
 import api.loja.lotus.exceptions.ResourceNotFound;
 import api.loja.lotus.mappers.CarrinhoMapper;
 import api.loja.lotus.models.Carrinho;
@@ -33,7 +34,10 @@ public class CarrinhoService {
     private final UsuarioAutenticadoService usuarioLogado;
 
     @Transactional 
-    public CarrinhoResponseDTO adicionarItemCarrinho(ItemCarrinhoRequestDTO dto, String cartToken) {
+    public CarrinhoResponseDTO adicionarItemCarrinho(
+        ItemCarrinhoRequestDTO dto, 
+        String cartToken) 
+    {
 
         Carrinho carrinho = obterCarrinho(cartToken);
 
@@ -41,17 +45,101 @@ public class CarrinhoService {
             .orElseThrow(() -> new ResourceNotFound("Produto não encontrado!"));
 
         validarAdicaoDeItens(carrinho, produto);
-        BigDecimal subTotal = BigDecimal.ZERO;
-
-        for (ItemCarrinho item : carrinho.getItens()) {
-            
-            subTotal = subTotal.add(item.getProduto().getPreco()
-                .multiply(BigDecimal.valueOf(item.getQuantidade())));
-        }
+        BigDecimal subTotal = validarSubTotal(carrinho);
 
         carrinho.setSubTotal(subTotal);
 
         return CarrinhoMapper.toDTO(carrinho);
+    }
+
+    @Transactional 
+    public CarrinhoResponseDTO aumentarQuantidadeItemCarrinho(
+        Long itemCarrinhoId,
+        String cartToken
+    ) 
+    {
+
+        Carrinho carrinho = obterCarrinho(cartToken);
+
+        ItemCarrinho itemCarrinho = itemCarrinhoRepository.findById(itemCarrinhoId)
+            .orElseThrow(() -> new ResourceNotFound("Item carrinho não encontrado!"));
+        
+        if (!itemCarrinho.getCarrinho().getId().equals(carrinho.getId())) {
+            throw new BusinessException("Este item não pertence a esse carrinho!");
+        }
+
+        itemCarrinho.setQuantidade(itemCarrinho.getQuantidade() + 1);
+
+        BigDecimal subTotal = validarSubTotal(carrinho);
+
+        carrinho.setSubTotal(subTotal);
+        itemCarrinhoRepository.save(itemCarrinho);
+
+        return CarrinhoMapper.toDTO(carrinho);
+    }
+
+    @Transactional 
+    public CarrinhoResponseDTO diminuirQuantidadeItemCarrinho(
+        Long itemCarrinhoId, 
+        String cartToken) 
+    {
+
+        Carrinho carrinho = obterCarrinho(cartToken);
+
+        ItemCarrinho itemCarrinho = itemCarrinhoRepository.findById(itemCarrinhoId)
+            .orElseThrow(() -> new ResourceNotFound("Carrinho não encontrado!"));
+
+        if (!itemCarrinho.getCarrinho().getId().equals(carrinho.getId())) {
+            throw new BusinessException("Este item não pertence a esse carrinho!");
+        }
+
+        if (itemCarrinho.getQuantidade() == 1) {
+            throw new BusinessException("Mínimo de 1 por quantidade!");
+        }
+
+        itemCarrinho.setQuantidade(itemCarrinho.getQuantidade() - 1);
+        BigDecimal subTotal = validarSubTotal(carrinho);
+
+        carrinho.setSubTotal(subTotal);
+
+        itemCarrinhoRepository.save(itemCarrinho);
+
+        return CarrinhoMapper.toDTO(carrinho);
+    }
+
+    @Transactional(readOnly = true)
+    public CarrinhoResponseDTO buscarCarrinhoDoUsuario(
+        String cartToken
+    ) {
+
+        Carrinho carrinho = obterCarrinho(cartToken);
+
+        return CarrinhoMapper.toDTO(carrinho);
+    }
+
+    @Transactional 
+    public void deletarItemCarrinho(
+        Long itemCarrinhoId,
+        String cartToken
+    ) 
+    {
+
+        Carrinho carrinho = obterCarrinho(cartToken);
+
+        ItemCarrinho itemCarrinho = itemCarrinhoRepository.findById(itemCarrinhoId)
+            .orElseThrow(() -> new ResourceNotFound("Item carrinho não encontrado!"));
+
+        if (!itemCarrinho.getCarrinho().getId().equals(carrinho.getId())) {
+            throw new BusinessException("Este item não pertence a esse carrinho!");
+        }
+
+        long quantidadeItens = itemCarrinhoRepository.countByCarrinho(carrinho);
+
+        if (quantidadeItens == 1) {
+            carrinhoRepository.delete(carrinho);
+        }
+
+        itemCarrinhoRepository.delete(itemCarrinho);
     }
 
     private void validarAdicaoDeItens(Carrinho carrinho, Produto produto) {
@@ -75,6 +163,19 @@ public class CarrinhoService {
         }
     }
 
+    private BigDecimal validarSubTotal(Carrinho carrinho) {
+
+        BigDecimal subTotal = BigDecimal.ZERO;
+
+        for (ItemCarrinho item : carrinho.getItens()) {
+            
+            subTotal = subTotal.add(item.getProduto().getPreco()
+                .multiply(BigDecimal.valueOf(item.getQuantidade())));
+        }
+
+        return subTotal;
+    }
+    
     private Carrinho obterCarrinho(String cartToken) {
 
         Optional<Usuario> usuario = usuarioLogado.usuarioAtual();
