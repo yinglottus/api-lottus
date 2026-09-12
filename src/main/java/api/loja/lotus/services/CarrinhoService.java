@@ -39,7 +39,7 @@ public class CarrinhoService {
         String cartToken) 
     {
 
-        Carrinho carrinho = obterCarrinho(cartToken);
+        Carrinho carrinho = obterOuCriarCarrinho(cartToken);
 
         Produto produto = produtoRepository.findById(dto.produtoId())
             .orElseThrow(() -> new ResourceNotFound("Produto não encontrado!"));
@@ -59,7 +59,7 @@ public class CarrinhoService {
     ) 
     {
 
-        Carrinho carrinho = obterCarrinho(cartToken);
+        Carrinho carrinho = obterCarrinhoExistente(cartToken);
 
         ItemCarrinho itemCarrinho = itemCarrinhoRepository.findById(itemCarrinhoId)
             .orElseThrow(() -> new ResourceNotFound("Item carrinho não encontrado!"));
@@ -84,7 +84,7 @@ public class CarrinhoService {
         String cartToken) 
     {
 
-        Carrinho carrinho = obterCarrinho(cartToken);
+        Carrinho carrinho = obterCarrinhoExistente(cartToken);
 
         ItemCarrinho itemCarrinho = itemCarrinhoRepository.findById(itemCarrinhoId)
             .orElseThrow(() -> new ResourceNotFound("Carrinho não encontrado!"));
@@ -112,7 +112,7 @@ public class CarrinhoService {
         String cartToken
     ) {
 
-        Carrinho carrinho = obterCarrinho(cartToken);
+        Carrinho carrinho = obterCarrinhoExistente(cartToken);
 
         return CarrinhoMapper.toDTO(carrinho);
     }
@@ -124,7 +124,7 @@ public class CarrinhoService {
     ) 
     {
 
-        Carrinho carrinho = obterCarrinho(cartToken);
+        Carrinho carrinho = obterCarrinhoExistente(cartToken);
 
         ItemCarrinho itemCarrinho = itemCarrinhoRepository.findById(itemCarrinhoId)
             .orElseThrow(() -> new ResourceNotFound("Item carrinho não encontrado!"));
@@ -140,6 +140,61 @@ public class CarrinhoService {
         }
 
         itemCarrinhoRepository.delete(itemCarrinho);
+    }
+
+    @Transactional 
+    public void associarOuMergearCarrinho(String cartToken, Usuario usuario) {
+
+        if (cartToken == null || cartToken.isBlank()) {
+            return;
+        }
+
+        Optional<Carrinho> carrinhoAnonimoOptional = carrinhoRepository.findByCartTokenAndUsuarioIsNull(cartToken);
+        
+        if (carrinhoAnonimoOptional.isEmpty())  {
+            return;
+        }
+
+        Carrinho carrinhoAnonimo = carrinhoAnonimoOptional.get();
+
+        Optional<Carrinho> carrinhoUsuarioOptional = carrinhoRepository.findByUsuario(usuario);
+
+        if (carrinhoUsuarioOptional.isEmpty()) {
+
+            carrinhoAnonimo.setUsuario(usuario);
+
+            carrinhoRepository.save(carrinhoAnonimo);
+
+            return;
+        }
+
+        Carrinho carrinhoUsuario = carrinhoUsuarioOptional.get();
+
+        for (ItemCarrinho itemAnonimo : carrinhoAnonimo.getItens()) {
+            
+            Optional<ItemCarrinho> itemExistente = 
+                    carrinhoUsuario.getItens().stream()
+                        .filter(item -> item.getProduto().getId()
+                        .equals(itemAnonimo.getProduto().getId()))  
+                    .findFirst();
+            
+            if (itemExistente.isPresent()) {
+
+                ItemCarrinho item = itemExistente.get();
+
+                item.setQuantidade(item.getQuantidade() + itemAnonimo.getQuantidade());
+            } else {
+
+                itemAnonimo.setCarrinho(carrinhoUsuario);
+                carrinhoUsuario.getItens().add(itemAnonimo);
+            }
+        }
+
+        carrinhoUsuario.setSubTotal(validarSubTotal(carrinhoUsuario));
+
+        carrinhoRepository.save(carrinhoUsuario);
+
+        carrinhoRepository.delete(carrinhoAnonimo);
     }
 
     private void validarAdicaoDeItens(Carrinho carrinho, Produto produto) {
@@ -176,7 +231,31 @@ public class CarrinhoService {
         return subTotal;
     }
     
-    private Carrinho obterCarrinho(String cartToken) {
+    private Carrinho obterCarrinhoExistente(String cartToken) {
+
+        Optional<Usuario> usuario = usuarioLogado.usuarioAtual();
+
+        if (usuario.isPresent()) {
+
+            return carrinhoRepository.findByUsuario(usuario.get())
+                .orElseGet(() -> {
+
+                    Carrinho novoCarrinho = new Carrinho();
+                    novoCarrinho.setUsuario(usuario.get());
+                    
+                    return carrinhoRepository.save(novoCarrinho);
+                });
+        }
+
+        if (cartToken == null || cartToken.isBlank()) {
+            return criarCarrinhoAnonimo();
+        }
+
+        return carrinhoRepository.findByCartToken(cartToken)
+            .orElseGet(this::criarCarrinhoAnonimo);
+    }
+
+    private Carrinho obterOuCriarCarrinho(String cartToken) {
 
         Optional<Usuario> usuario = usuarioLogado.usuarioAtual();
 
