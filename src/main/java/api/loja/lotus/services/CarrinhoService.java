@@ -268,6 +268,12 @@ public class CarrinhoService {
             .append("\n");
 
         mensagem.append("\n");
+
+        mensagem.append("*Nome*: ")
+            .append(dto.nome())
+            .append("\n");
+
+        mensagem.append("\n");
         mensagem.append("*Subtotal*: R$ ")
             .append(carrinho.getSubTotal());
 
