@@ -160,6 +160,52 @@ public class ProdutoService {
         return ProdutoMapper.toDTO(produto);
     }
 
+    @Transactional 
+    public ProdutoResponseDTO ativarProduto(Long produtoId) {
+
+        var usuario = usuarioLogado.usuarioLogado();
+
+        if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
+            throw new BusinessException("Você não tem permissão de ativar produtos!");
+        }
+
+        Produto produto = produtoRepository.findById(produtoId)
+            .orElseThrow(() -> new ResourceNotFound("Produto não encontrado!"));
+
+        if (produto.isAtivo()) {
+            throw new BusinessException("Produto já está ativo!");
+        }
+
+        produto.setAtivo(true);
+
+        produtoRepository.save(produto);
+
+        return ProdutoMapper.toDTO(produto);
+    }
+
+    @Transactional 
+    public ProdutoResponseDTO desativarProduto(Long produtoId) {
+
+        var usuario = usuarioLogado.usuarioLogado();
+
+        if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
+            throw new BusinessException("Você não tem permissão de desativar produtos!");
+        }
+
+        Produto produto = produtoRepository.findById(produtoId)
+            .orElseThrow(() -> new ResourceNotFound("Produto não encontrado!"));
+
+        if (!produto.isAtivo()) {
+            throw new BusinessException("Produto já está desativado!");
+        }
+
+        produto.setAtivo(false);
+
+        produtoRepository.save(produto);
+
+        return ProdutoMapper.toDTO(produto);
+    }
+
     @Transactional (readOnly = true)
     public Page<ProdutoResponseDTO> buscarTodosProdutosAtivos(Pageable pageable) {
 
