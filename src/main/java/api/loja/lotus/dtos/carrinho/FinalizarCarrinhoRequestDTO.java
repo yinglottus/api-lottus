@@ -8,7 +8,10 @@ public record FinalizarCarrinhoRequestDTO(
     String rua,
 
     @NotBlank 
-    String numero
+    String numero,
+
+    @NotBlank 
+    String nome
 ) {
     
 }
