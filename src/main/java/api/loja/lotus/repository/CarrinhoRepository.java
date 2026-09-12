@@ -13,4 +13,6 @@ public interface CarrinhoRepository extends JpaRepository<Carrinho, Long> {
 
     Optional<Carrinho> findByCartToken(String cartToken);
 
+    Optional<Carrinho> findByCartTokenAndUsuarioIsNull(String carToken);
+
 }
