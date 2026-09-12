@@ -68,6 +68,10 @@ public class CarrinhoService {
             throw new BusinessException("Este item não pertence a esse carrinho!");
         }
 
+        if (itemCarrinho.getQuantidade() >= 5) {
+            throw new BusinessException("Máximo de 5 por item!");
+        }
+
         itemCarrinho.setQuantidade(itemCarrinho.getQuantidade() + 1);
 
         BigDecimal subTotal = validarSubTotal(carrinho);
