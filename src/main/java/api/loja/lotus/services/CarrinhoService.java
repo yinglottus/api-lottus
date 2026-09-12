@@ -1,14 +1,19 @@
 package api.loja.lotus.services;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import api.loja.lotus.dtos.ItemCarrinho.ItemCarrinhoRequestDTO;
 import api.loja.lotus.dtos.carrinho.CarrinhoResponseDTO;
+import api.loja.lotus.dtos.carrinho.FinalizarCarrinhoRequestDTO;
+import api.loja.lotus.dtos.carrinho.FinalizarCarrinhoResponseDTO;
 import api.loja.lotus.exceptions.BusinessException;
 import api.loja.lotus.exceptions.ResourceNotFound;
 import api.loja.lotus.mappers.CarrinhoMapper;
@@ -32,6 +37,37 @@ public class CarrinhoService {
     private final ProdutoRepository produtoRepository;
     private final ItemCarrinhoRepository itemCarrinhoRepository;
     private final UsuarioAutenticadoService usuarioLogado;
+
+    @Value("${whatsapp.number}")
+    private String numeroWhatsapp;
+
+    @Transactional(readOnly = true)
+    public FinalizarCarrinhoResponseDTO finalizarCarrinho(
+        String cartToken,
+        FinalizarCarrinhoRequestDTO dto
+    ) 
+    {
+
+        Carrinho carrinho = obterCarrinhoExistente(cartToken);
+
+        if (carrinho.getItens().isEmpty()) {
+            throw new BusinessException("Carrinho está vazio!");
+        }       
+
+        String mensagem = montarMensagem(carrinho, dto);
+
+        String mensagemCodificada = URLEncoder.encode(
+            mensagem, 
+            StandardCharsets.UTF_8
+        );
+
+        String whatsappUrl = "https://wa.me/"
+            + numeroWhatsapp
+            + "?text="      
+            + mensagemCodificada;
+            
+        return new FinalizarCarrinhoResponseDTO(whatsappUrl);
+    }
 
     @Transactional 
     public CarrinhoResponseDTO adicionarItemCarrinho(
@@ -202,13 +238,51 @@ public class CarrinhoService {
         carrinhoRepository.delete(carrinhoAnonimo);
     }
 
+    private String montarMensagem(
+        Carrinho carrinho,
+        FinalizarCarrinhoRequestDTO dto
+    ) 
+    {
+
+        StringBuilder mensagem = new StringBuilder();
+
+        mensagem.append("Olá! Gostaria de fazer um pedido.\n\n");
+
+        mensagem.append("Itens do pedido:*\n");
+
+        for (ItemCarrinho item : carrinho.getItens()) {
+
+            mensagem.append("-")
+                .append(item.getQuantidade())
+                .append("x")
+                .append(item.getProduto().getNome())
+                .append("\n");
+        }
+
+        mensagem.append("\n");
+
+        mensagem.append("*Endereço de entrega*:\n");
+        mensagem.append(dto.rua())
+            .append(", ")
+            .append(dto.numero())
+            .append("\n");
+
+        mensagem.append("\n");
+        mensagem.append("*Subtotal*: R$ ")
+            .append(carrinho.getSubTotal());
+
+        return mensagem.toString();
+    }
+
     private void validarAdicaoDeItens(Carrinho carrinho, Produto produto) {
 
         Optional<ItemCarrinho> itemExistente = carrinho.getItens().stream()
             .filter(item -> item.getProduto().getId().equals(produto.getId()))
             .findFirst();
 
-        if (itemExistente.get().getQuantidade() >= 5) {
+        if (itemExistente.isPresent() &&
+            itemExistente.get().getQuantidade() >= 5) 
+        {
             throw new BusinessException("Máximo de 5 por item!");
         }
 

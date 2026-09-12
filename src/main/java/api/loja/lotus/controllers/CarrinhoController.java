@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import api.loja.lotus.dtos.ItemCarrinho.ItemCarrinhoRequestDTO;
 import api.loja.lotus.dtos.carrinho.CarrinhoResponseDTO;
+import api.loja.lotus.dtos.carrinho.FinalizarCarrinhoRequestDTO;
+import api.loja.lotus.dtos.carrinho.FinalizarCarrinhoResponseDTO;
 import api.loja.lotus.services.CarrinhoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,15 @@ import lombok.RequiredArgsConstructor;
 public class CarrinhoController {
     
     private final CarrinhoService carrinhoService;
+
+    @PostMapping("/finalizar")
+    public ResponseEntity<FinalizarCarrinhoResponseDTO> finalizarCarrinho(
+        @RequestHeader(value = "X-cart-Token", required = false) String cartToken,
+        @RequestBody @Valid FinalizarCarrinhoRequestDTO dto
+    ) 
+    {
+        return ResponseEntity.ok(carrinhoService.finalizarCarrinho(cartToken, dto));
+    }
 
     @PostMapping("/itens/adicionar")
     public ResponseEntity<CarrinhoResponseDTO> adicionarItemCarrinho(
