@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -55,12 +56,28 @@ public class ProdutoController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{produtoId}/atualizar")
-    public ResponseEntity<ProdutoResponseDTO> editarCamposProduto(
+    public ResponseEntity<ProdutoResponseDTO> atualizarProduto(
         @RequestBody @Valid ProdutoRequestDTO dto,
         @PathVariable("produtoId") Long produtoId
     ) 
     {
         return ResponseEntity.ok(produtoService.atualizarProduto(dto, produtoId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{produtoId}/ativar")
+    public ResponseEntity<ProdutoResponseDTO> ativarProduto(
+        @PathVariable("produtoId") Long produtoId) 
+    {
+        return ResponseEntity.ok(produtoService.ativarProduto(produtoId));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/{produtoId}/desativar")
+    public ResponseEntity<ProdutoResponseDTO> desativarProduto(
+        @PathVariable("produtoId") Long produtoId)
+    {
+        return ResponseEntity.ok(produtoService.desativarProduto(produtoId));
     }
 
     @GetMapping("/buscar/ativos")
