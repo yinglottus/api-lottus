@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import api.loja.lotus.dtos.imagem.ProdutoImagemResponseDTO;
+import api.loja.lotus.models.enums.Categoria;
 
 public record ProdutoResponseDTO(
 
@@ -12,6 +13,8 @@ public record ProdutoResponseDTO(
     List<ProdutoImagemResponseDTO> imagens,
 
     String nome,
+
+    Categoria categoria,
 
     String descricao,
 

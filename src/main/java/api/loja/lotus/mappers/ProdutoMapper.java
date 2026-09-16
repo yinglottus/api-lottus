@@ -21,6 +21,7 @@ public class ProdutoMapper {
             produto.getId(),
             produto.getImagens().stream().map(ProdutoImagemMapper::toDTO).toList(),
             produto.getNome(),
+            produto.getCategoria(),
             produto.getDescricao(),
             produto.getPreco(),
             produto.isAtivo()
