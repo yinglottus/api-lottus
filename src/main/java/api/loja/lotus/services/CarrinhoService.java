@@ -265,9 +265,18 @@ public class CarrinhoService {
         mensagem.append(dto.rua())
             .append(", ")
             .append(dto.numero())
+            .append(", ")
+            .append("Cidade: ")
+            .append(dto.cidade())
             .append("\n");
 
         mensagem.append("\n");
+
+        if (dto.mensagem() != null) {
+            mensagem.append("Mensagem: ")
+                .append(dto.mensagem())
+                .append("\n\n");
+        }
 
         mensagem.append("*Nome*: ")
             .append(dto.nome())

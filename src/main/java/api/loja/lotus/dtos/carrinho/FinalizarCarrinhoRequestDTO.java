@@ -5,13 +5,19 @@ import jakarta.validation.constraints.NotBlank;
 public record FinalizarCarrinhoRequestDTO(
 
     @NotBlank 
+    String cidade,
+
+    @NotBlank 
     String rua,
 
     @NotBlank 
     String numero,
 
     @NotBlank 
-    String nome
+    String nome,
+
+    @NotBlank 
+    String mensagem
 ) {
     
 }
