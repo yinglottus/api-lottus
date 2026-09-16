@@ -154,6 +154,7 @@ public class ProdutoService {
         produto.setNome(dto.nome());
         produto.setDescricao(dto.descricao());
         produto.setPreco(dto.preco());
+        produto.setCategoria(dto.categoria());
 
         produtoRepository.save(produto);
 

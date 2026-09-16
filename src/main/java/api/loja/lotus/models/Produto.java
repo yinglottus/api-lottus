@@ -7,11 +7,15 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.BatchSize;
+
+import api.loja.lotus.models.enums.Categoria;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@Builder 
 @Entity
 @Table(name = "produtos")
 public class Produto {
@@ -26,6 +30,11 @@ public class Produto {
     @Column(nullable = false)
     private String descricao;
 
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Categoria categoria = Categoria.Geral;
+
     @Column(nullable = false)
     private BigDecimal preco;
 
@@ -34,6 +43,7 @@ public class Produto {
     private boolean ativo = true;
 
     @Builder.Default
+    @BatchSize(size = 20)
     @OneToMany(
             mappedBy = "produto",
             cascade = CascadeType.ALL,
