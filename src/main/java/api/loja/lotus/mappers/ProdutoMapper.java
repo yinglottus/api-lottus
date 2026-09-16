@@ -11,6 +11,7 @@ public class ProdutoMapper {
         return Produto.builder()
             .nome(dto.nome())
             .descricao(dto.descricao())
+            .categoria(dto.categoria())
             .preco(dto.preco())
         .build();
     }
