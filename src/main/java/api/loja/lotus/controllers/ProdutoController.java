@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import api.loja.lotus.dtos.produto.ProdutoFilterDTO;
 import api.loja.lotus.dtos.produto.ProdutoRequestDTO;
 import api.loja.lotus.dtos.produto.ProdutoResponseDTO;
 import api.loja.lotus.services.ProdutoService;
@@ -82,19 +83,21 @@ public class ProdutoController {
 
     @GetMapping("/buscar/ativos")
     public ResponseEntity<Page<ProdutoResponseDTO>> buscarTodosProdutosAtivos(
+        ProdutoFilterDTO filter,
         @PageableDefault(size = 12, sort = "nome") Pageable pageable
     ) 
     {
-        return ResponseEntity.ok(produtoService.buscarTodosProdutosAtivos(pageable));
+        return ResponseEntity.ok(produtoService.buscarTodosProdutosAtivos(filter, pageable));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/buscar/admin")
     public ResponseEntity<Page<ProdutoResponseDTO>> buscarTodosProdutosAdmin(
+        ProdutoFilterDTO filter,
         @PageableDefault(size = 12, sort = "nome") Pageable pageable
     ) 
     {   
-        return ResponseEntity.ok(produtoService.buscarTodosProdutosAdmin(pageable));
+        return ResponseEntity.ok(produtoService.buscarTodosProdutosAdmin(filter, pageable));
     }
 
     @GetMapping("/{produtoId}/buscar")

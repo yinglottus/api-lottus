@@ -4,10 +4,12 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import api.loja.lotus.dtos.produto.ProdutoFilterDTO;
 import api.loja.lotus.dtos.produto.ProdutoRequestDTO;
 import api.loja.lotus.dtos.produto.ProdutoResponseDTO;
 import api.loja.lotus.exceptions.BusinessException;
@@ -20,6 +22,7 @@ import api.loja.lotus.repository.ProdutoImagemRepository;
 import api.loja.lotus.repository.ProdutoRepository;
 import api.loja.lotus.services.auth.UsuarioAutenticadoService;
 import api.loja.lotus.services.storage.SupabaseStorageService;
+import api.loja.lotus.specs.ProdutoSpecification;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -208,24 +211,36 @@ public class ProdutoService {
     }
 
     @Transactional (readOnly = true)
-    public Page<ProdutoResponseDTO> buscarTodosProdutosAtivos(Pageable pageable) {
+    public Page<ProdutoResponseDTO> buscarTodosProdutosAtivos(
+        ProdutoFilterDTO filter,
+        Pageable pageable
+    )
+    {
 
-        Page<Produto> produtos = produtoRepository.findAllByAtivo(true, pageable);
+        Specification<Produto> specAtivos = ProdutoSpecification.filterAtivos(filter);
+
+        Page<Produto> produtos = produtoRepository.findAll(specAtivos, pageable);
 
         return produtos
             .map(ProdutoMapper::toDTO);
     }
 
     @Transactional (readOnly = true)
-    public Page<ProdutoResponseDTO> buscarTodosProdutosAdmin(Pageable pageable) {
+    public Page<ProdutoResponseDTO> buscarTodosProdutosAdmin(
+        ProdutoFilterDTO filter,
+        Pageable pageable
+    ) 
+    {
 
         var usuario = usuarioLogado.usuarioLogado();
 
         if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
             throw new BusinessException("Você não tem permissão de visualizar esses produtos!");
         }
+ 
+        Specification<Produto> specAdmin = ProdutoSpecification.filterAllAdmin(filter);
 
-        Page<Produto> produtos = produtoRepository.findAll(pageable);
+        Page<Produto> produtos = produtoRepository.findAll(specAdmin, pageable);
 
         return produtos
             .map(ProdutoMapper::toDTO);
