@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -43,6 +46,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ProblemDetail> badCredentialsException(BadCredentialsException exception, HttpServletRequest request) {
         return build(HttpStatus.UNAUTHORIZED, "Email ou senha incorretos!", request);
+    }
+
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAuthorizationDenied(AuthorizationDeniedException ex, HttpServletRequest request) {
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+
+        boolean isAnonimo = auth == null
+            || auth instanceof AnonymousAuthenticationToken;
+
+        if (isAnonimo) {
+            return build(HttpStatus.UNAUTHORIZED, "Autenticação necessária!", request);
+        }
+
+        return build(HttpStatus.FORBIDDEN, "Acesso negado permissão insuficiente!", request);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

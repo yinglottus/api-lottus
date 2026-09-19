@@ -66,18 +66,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (ExpiredJwtException e) {
 
-            log.warn("JWT expirado!");
+            log.warn("Token jwt expirado!");
+            enviarErro401(response, "Token expirado!");
+            return;
 
         } catch (UsernameNotFoundException ex) {
 
-            log.warn("Usuário JWT não encontrado!");
+            log.warn("Usuário jwt não encontrado!");
+            enviarErro401(response, "Usuário não encontrado!"); 
+            return;
 
         } catch (JwtException | IllegalArgumentException e) {
 
             log.warn("JWT inválido: {}", e.getMessage());
+            enviarErro401(response, "Token inválido ou expirado!");
+            return;
 
         }
 
         filterChain.doFilter(request, response);
     }
+
+    private void enviarErro401(HttpServletResponse response, String mensagem) throws IOException {
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(
+            """
+            {"status":401,"title":"Unauthorized","detail":"%s"}        
+            """.formatted(mensagem)
+        );
+    }
+
 }
