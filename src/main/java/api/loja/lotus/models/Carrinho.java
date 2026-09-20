@@ -40,4 +40,8 @@ public class Carrinho {
     @JoinColumn(name = "usuario_id", unique = true)
     private Usuario usuario;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cupom_id")
+    private Cupom cupom;
+
 }
