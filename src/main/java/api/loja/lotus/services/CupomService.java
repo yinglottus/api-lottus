@@ -166,7 +166,7 @@ public class CupomService {
         cupomRepository.delete(cupom);
     }
 
-    private BigDecimal aplicarDesconto(BigDecimal preco, BigDecimal percentual) {
+    public BigDecimal aplicarDesconto(BigDecimal preco, BigDecimal percentual) {
 
         BigDecimal fator = percentual.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
         BigDecimal desconto = preco.multiply(fator);
