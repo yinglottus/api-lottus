@@ -16,7 +16,6 @@ public record FinalizarCarrinhoRequestDTO(
     @NotBlank 
     String nome,
 
-    @NotBlank 
     String mensagem
 ) {
     

@@ -24,6 +24,10 @@ public class Carrinho {
     @Column(name = "sub_total", nullable = false)
     private BigDecimal subTotal = BigDecimal.ZERO;
 
+    @Builder.Default
+    @Column(name = "sub_total_descontado")
+    private BigDecimal subTotalDescontado = BigDecimal.ZERO;
+
     @Column(name = "cart_token", unique = true)
     private String cartToken;
 

@@ -15,6 +15,7 @@ public class CarrinhoMapper {
         return new CarrinhoResponseDTO(
             carrinho.getId(),
             carrinho.getSubTotal(),
+            carrinho.getSubTotalDescontado(),
             carrinho.getCartToken(),
             dto,
             carrinho.getItens().stream().map(ItemCarrinhoMapper::toDTO).toList()

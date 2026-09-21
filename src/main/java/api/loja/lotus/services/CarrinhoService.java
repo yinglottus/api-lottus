@@ -247,7 +247,7 @@ public class CarrinhoService {
 
         mensagem.append("Olá! Gostaria de fazer um pedido.\n\n");
 
-        mensagem.append("Itens do pedido:*\n");
+        mensagem.append("*Itens do pedido*:\n");
 
         for (ItemCarrinho item : carrinho.getItens()) {
 
@@ -255,10 +255,8 @@ public class CarrinhoService {
                 .append(item.getQuantidade())
                 .append("x")
                 .append(item.getProduto().getNome())
-                .append("\n");
+                .append("\n\n");
         }
-
-        mensagem.append("\n");
 
         mensagem.append("*Endereço de entrega*:\n");
         mensagem.append(dto.rua())
@@ -267,23 +265,29 @@ public class CarrinhoService {
             .append(", ")
             .append("Cidade: ")
             .append(dto.cidade())
-            .append("\n");
-
-        mensagem.append("\n");
+            .append("\n\n");
 
         if (dto.mensagem() != null) {
-            mensagem.append("Mensagem: ")
+            mensagem.append("*Mensagem*: ")
                 .append(dto.mensagem())
                 .append("\n\n");
         }
 
         mensagem.append("*Nome*: ")
             .append(dto.nome())
-            .append("\n");
+            .append("\n\n");
 
-        mensagem.append("\n");
-        mensagem.append("*Subtotal*: R$ ")
-            .append(carrinho.getSubTotal());
+        if (carrinho.getCupom() == null) {
+            return mensagem.append("*Subtotal*: R$ ")
+                .append(carrinho.getSubTotal()).toString();
+        }
+        
+        mensagem.append("*Subtotal descontado!*: R$ ")
+            .append(carrinho.getSubTotalDescontado())
+            .append("\n\n");
+
+        mensagem.append("*Cupom*: ")
+            .append(carrinho.getCupom().getCodigo());
 
         return mensagem.toString();
     }

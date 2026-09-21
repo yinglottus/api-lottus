@@ -77,8 +77,8 @@ public class CupomService {
 
         BigDecimal precoDescontado = aplicarDesconto(carrinho.getSubTotal(), cupom.getDesconto());
 
-        carrinho.setSubTotal(precoDescontado);
-        carrinho.setCupom(cupom);       
+        carrinho.setSubTotalDescontado(precoDescontado);
+        carrinho.setCupom(cupom);
 
         carrinhoRepository.save(carrinho);
 

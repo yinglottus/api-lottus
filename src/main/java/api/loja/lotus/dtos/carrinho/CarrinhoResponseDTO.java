@@ -12,6 +12,8 @@ public record CarrinhoResponseDTO(
     
     BigDecimal subTotal,
 
+    BigDecimal subTotalDescontado,
+
     String cartToken,
 
     CupomResponseDTO cupom,
