@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import api.loja.lotus.dtos.ItemCarrinho.ItemCarrinhoResponseDTO;
+import api.loja.lotus.dtos.cupom.CupomResponseDTO;
 
 public record CarrinhoResponseDTO(
     
@@ -11,7 +12,11 @@ public record CarrinhoResponseDTO(
     
     BigDecimal subTotal,
 
+    BigDecimal subTotalDescontado,
+
     String cartToken,
+
+    CupomResponseDTO cupom,
 
     List<ItemCarrinhoResponseDTO> itens
 ) {
