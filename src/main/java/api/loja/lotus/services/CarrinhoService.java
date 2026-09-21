@@ -182,7 +182,11 @@ public class CarrinhoService {
 
         if (quantidadeItens == 0) {
             carrinhoRepository.delete(carrinho);
+            return;
         }   
+
+        BigDecimal subTotal = validarSubTotal(carrinho);
+        carrinho.setSubTotal(subTotal);
     }
 
     @Transactional 
