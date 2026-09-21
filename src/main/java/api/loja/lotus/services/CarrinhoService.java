@@ -180,7 +180,7 @@ public class CarrinhoService {
 
         long quantidadeItens = itemCarrinhoRepository.countByCarrinho(carrinho);
 
-        if (quantidadeItens == 0) {
+        if (quantidadeItens == 0 && carrinho.getCupom() == null) {
             carrinhoRepository.delete(carrinho);
             return;
         }   
