@@ -219,16 +219,15 @@ public class CarrinhoService {
                         .equals(itemAnonimo.getProduto().getId()))  
                     .findFirst();
             
-            if (itemExistente.isPresent()) {
-
-                ItemCarrinho item = itemExistente.get();
-
-                item.setQuantidade(item.getQuantidade() + itemAnonimo.getQuantidade());
-            } else {
+            if (!itemExistente.isPresent()) {
 
                 itemAnonimo.setCarrinho(carrinhoUsuario);
                 carrinhoUsuario.getItens().add(itemAnonimo);
-            }
+                continue;
+            } 
+
+            ItemCarrinho item = itemExistente.get();    
+            item.setQuantidade(item.getQuantidade() + itemAnonimo.getQuantidade());
         }
 
         carrinhoUsuario.setSubTotal(validarSubTotal(carrinhoUsuario));
@@ -248,7 +247,7 @@ public class CarrinhoService {
 
         mensagem.append("Olá! Gostaria de fazer um pedido.\n\n");
 
-        mensagem.append("Itens do pedido:*\n");
+        mensagem.append("*Itens do pedido*:\n");
 
         for (ItemCarrinho item : carrinho.getItens()) {
 
@@ -256,10 +255,8 @@ public class CarrinhoService {
                 .append(item.getQuantidade())
                 .append("x")
                 .append(item.getProduto().getNome())
-                .append("\n");
+                .append("\n\n");
         }
-
-        mensagem.append("\n");
 
         mensagem.append("*Endereço de entrega*:\n");
         mensagem.append(dto.rua())
@@ -268,23 +265,29 @@ public class CarrinhoService {
             .append(", ")
             .append("Cidade: ")
             .append(dto.cidade())
-            .append("\n");
-
-        mensagem.append("\n");
+            .append("\n\n");
 
         if (dto.mensagem() != null) {
-            mensagem.append("Mensagem: ")
+            mensagem.append("*Mensagem*: ")
                 .append(dto.mensagem())
                 .append("\n\n");
         }
 
         mensagem.append("*Nome*: ")
             .append(dto.nome())
-            .append("\n");
+            .append("\n\n");
 
-        mensagem.append("\n");
-        mensagem.append("*Subtotal*: R$ ")
-            .append(carrinho.getSubTotal());
+        if (carrinho.getCupom() == null) {
+            return mensagem.append("*Subtotal*: R$ ")
+                .append(carrinho.getSubTotal()).toString();
+        }
+        
+        mensagem.append("*Subtotal descontado!*: R$ ")
+            .append(carrinho.getSubTotalDescontado())
+            .append("\n\n");
+
+        mensagem.append("*Cupom*: ")
+            .append(carrinho.getCupom().getCodigo());
 
         return mensagem.toString();
     }
@@ -329,7 +332,7 @@ public class CarrinhoService {
         return subTotal;
     }
     
-    private Carrinho obterCarrinhoExistente(String cartToken) {
+    private Carrinho obterOuCriarCarrinho(String cartToken) {
 
         Optional<Usuario> usuario = usuarioLogado.usuarioAtual();
 
@@ -353,24 +356,18 @@ public class CarrinhoService {
             .orElseGet(this::criarCarrinhoAnonimo);
     }
 
-    private Carrinho obterOuCriarCarrinho(String cartToken) {
+    public Carrinho obterCarrinhoExistente(String cartToken) {
 
         Optional<Usuario> usuario = usuarioLogado.usuarioAtual();
 
         if (usuario.isPresent()) {
 
             return carrinhoRepository.findByUsuario(usuario.get())
-                .orElseGet(() -> {
-
-                    Carrinho novoCarrinho = new Carrinho();
-                    novoCarrinho.setUsuario(usuario.get());
-                    
-                    return carrinhoRepository.save(novoCarrinho);
-                });
+                .orElseThrow(() -> new ResourceNotFound("Carrinho não encontrado!"));
         }
 
         if (cartToken == null || cartToken.isBlank()) {
-            return criarCarrinhoAnonimo();
+            throw new ResourceNotFound("Carrinho não encontrado!");
         }
 
         return carrinhoRepository.findByCartToken(cartToken)

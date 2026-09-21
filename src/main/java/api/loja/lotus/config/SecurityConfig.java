@@ -56,6 +56,8 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produto/**").permitAll()
                         .requestMatchers("/carrinho/**").permitAll()
+                        .requestMatchers("/cupom/criar").hasRole("ADMIN")
+                        .requestMatchers("/cupom/**").permitAll()
 
                         // autenticados
                         .requestMatchers("/usuario/**").authenticated()
