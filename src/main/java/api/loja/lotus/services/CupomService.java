@@ -3,6 +3,8 @@ package api.loja.lotus.services;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +29,7 @@ public class CupomService {
     
     private final CupomRepository cupomRepository;
     private final CarrinhoRepository carrinhoRepository;
+    private final CarrinhoService carrinhoService;
     private final UsuarioAutenticadoService usuarioLogado;
 
     @Transactional 
@@ -50,13 +53,12 @@ public class CupomService {
 
     @Transactional
     public CupomResponseDTO aplicarDescontoCarrinho(
-        Long carrinhoId,
+        String cartToken,
         CupomAdicionarDTO dto
     ) 
     {
 
-        Carrinho carrinho = carrinhoRepository.findById(carrinhoId)
-            .orElseThrow(() -> new ResourceNotFound("Carrinho não encontrado!"));
+        Carrinho carrinho = carrinhoService.obterCarrinhoExistente(cartToken);
 
         if (carrinho.getCupom() != null) {
             throw new BusinessException("Este carrinho já possui cupom!");
@@ -83,10 +85,92 @@ public class CupomService {
         return CupomResponseDTO.from(cupom);
     }
 
+    @Transactional
+    public CupomResponseDTO atualizarCupom(CupomRequestDTO dto, Long cupomId) {
+
+        var usuario = usuarioLogado.usuarioLogado();
+
+        if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
+            throw new BusinessException("Você não tem permissão de atualizar cupons!");
+        }
+
+        Cupom cupom = cupomRepository.findById(cupomId)
+            .orElseThrow(() -> new ResourceNotFound("Cupom não encontrado!"));
+
+        cupom.atualizarCupom(dto);
+
+        cupomRepository.save(cupom);
+
+        return CupomResponseDTO.from(cupom);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CupomResponseDTO> buscarTodosCupons(Pageable pageable) {
+
+        var usuario = usuarioLogado.usuarioLogado();
+
+        if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
+            throw new BusinessException("Você não tem permissão de visualizar cupons!");
+        }
+
+        Page<Cupom> cupons = cupomRepository.findAll(pageable);
+
+        return cupons
+            .map(CupomResponseDTO::from);
+    }
+
+    @Transactional(readOnly = true)
+    public CupomResponseDTO buscarCupomMeuCarrinho(String cartToken) 
+    {
+
+        Carrinho carrinho = carrinhoService.obterCarrinhoExistente(cartToken);
+
+        if (carrinho.getCupom() == null) {
+            throw new ResourceNotFound("Carrinho está sem cupom!");
+        }
+
+        Cupom cupom = carrinho.getCupom();
+
+        return CupomResponseDTO.from(cupom);
+    }
+
+    @Transactional(readOnly = true)
+    public CupomResponseDTO buscarCupomPorId(Long cupomId) {
+
+        var usuario = usuarioLogado.usuarioLogado();
+
+        if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
+            throw new BusinessException("Você não tem permissão de ver esse cupom!");
+        }
+
+        Cupom cupom = cupomRepository.findById(cupomId)
+            .orElseThrow(() -> new ResourceNotFound("Cupom não encontrado!"));
+
+        return CupomResponseDTO.from(cupom);
+    }
+
+    @Transactional
+    public void deletarCupom(Long cupomId) {
+
+        var usuario = usuarioLogado.usuarioLogado();
+
+        if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
+            throw new BusinessException("Você não tem permissão de excluir esse cupom!");
+        }
+
+        Cupom cupom = cupomRepository.findById(cupomId)
+            .orElseThrow(() -> new ResourceNotFound("Cupom não encontardo!"));
+
+        carrinhoRepository.removerCupomDosCarrinhos(cupomId);
+        
+        cupomRepository.delete(cupom);
+    }
+
     private BigDecimal aplicarDesconto(BigDecimal preco, BigDecimal percentual) {
 
         BigDecimal fator = percentual.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
         BigDecimal desconto = preco.multiply(fator);
         return preco = preco.subtract(desconto).setScale(2, RoundingMode.HALF_UP);
     }
+
 }

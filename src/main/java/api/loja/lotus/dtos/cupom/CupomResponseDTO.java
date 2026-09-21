@@ -10,7 +10,9 @@ public record CupomResponseDTO(
 
     String codigo,
 
-    BigDecimal desconto
+    BigDecimal desconto,
+
+    Integer quantidade
 ) 
 {
     
@@ -19,7 +21,8 @@ public record CupomResponseDTO(
         return new CupomResponseDTO(
             cupom.getId(), 
             cupom.getCodigo(), 
-            cupom.getDesconto()
+            cupom.getDesconto(),
+            cupom.getQuantidade()
         );
     }
 }

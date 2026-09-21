@@ -219,16 +219,15 @@ public class CarrinhoService {
                         .equals(itemAnonimo.getProduto().getId()))  
                     .findFirst();
             
-            if (itemExistente.isPresent()) {
-
-                ItemCarrinho item = itemExistente.get();
-
-                item.setQuantidade(item.getQuantidade() + itemAnonimo.getQuantidade());
-            } else {
+            if (!itemExistente.isPresent()) {
 
                 itemAnonimo.setCarrinho(carrinhoUsuario);
                 carrinhoUsuario.getItens().add(itemAnonimo);
-            }
+                continue;
+            } 
+
+            ItemCarrinho item = itemExistente.get();    
+            item.setQuantidade(item.getQuantidade() + itemAnonimo.getQuantidade());
         }
 
         carrinhoUsuario.setSubTotal(validarSubTotal(carrinhoUsuario));
@@ -329,7 +328,7 @@ public class CarrinhoService {
         return subTotal;
     }
     
-    private Carrinho obterCarrinhoExistente(String cartToken) {
+    private Carrinho obterOuCriarCarrinho(String cartToken) {
 
         Optional<Usuario> usuario = usuarioLogado.usuarioAtual();
 
@@ -353,24 +352,18 @@ public class CarrinhoService {
             .orElseGet(this::criarCarrinhoAnonimo);
     }
 
-    private Carrinho obterOuCriarCarrinho(String cartToken) {
+    public Carrinho obterCarrinhoExistente(String cartToken) {
 
         Optional<Usuario> usuario = usuarioLogado.usuarioAtual();
 
         if (usuario.isPresent()) {
 
             return carrinhoRepository.findByUsuario(usuario.get())
-                .orElseGet(() -> {
-
-                    Carrinho novoCarrinho = new Carrinho();
-                    novoCarrinho.setUsuario(usuario.get());
-                    
-                    return carrinhoRepository.save(novoCarrinho);
-                });
+                .orElseThrow(() -> new ResourceNotFound("Carrinho não encontrado!"));
         }
 
         if (cartToken == null || cartToken.isBlank()) {
-            return criarCarrinhoAnonimo();
+            throw new ResourceNotFound("Carrinho não encontrado!");
         }
 
         return carrinhoRepository.findByCartToken(cartToken)

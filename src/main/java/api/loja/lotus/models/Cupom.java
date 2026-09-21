@@ -57,4 +57,13 @@ public class Cupom {
         return cupom;
     }
 
+    public Cupom atualizarCupom(CupomRequestDTO dto) {
+
+        this.setCodigo(dto.codigo());
+        this.setDesconto(dto.desconto());
+        this.setQuantidade(dto.quantidade());
+
+        return this;
+    }
+
 }
