@@ -25,7 +25,8 @@ public interface CarrinhoRepository extends JpaRepository<Carrinho, Long> {
     @Modifying 
     @Query("""
             UPDATE Carrinho c
-            SET c.cupom = null
+            SET c.cupom = null,
+                c.subTotalDescontado = null
             WHERE c.cupom.id = :cupomId
             """)
     int removerCupomDosCarrinhos(@Param("cupomId") Long cupomId);

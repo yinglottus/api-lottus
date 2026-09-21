@@ -1,6 +1,7 @@
 package api.loja.lotus.services;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -174,13 +175,14 @@ public class CarrinhoService {
             throw new BusinessException("Este item não pertence a esse carrinho!");
         }
 
+        itemCarrinhoRepository.delete(itemCarrinho);
+        carrinho.getItens().remove(itemCarrinho);
+
         long quantidadeItens = itemCarrinhoRepository.countByCarrinho(carrinho);
 
-        if (quantidadeItens == 1) {
+        if (quantidadeItens == 0) {
             carrinhoRepository.delete(carrinho);
-        }
-
-        itemCarrinhoRepository.delete(itemCarrinho);
+        }   
     }
 
     @Transactional 
@@ -327,6 +329,15 @@ public class CarrinhoService {
             
             subTotal = subTotal.add(item.getProduto().getPreco()
                 .multiply(BigDecimal.valueOf(item.getQuantidade())));
+        }
+
+        if (carrinho.getCupom() != null) {
+            BigDecimal percentual = carrinho.getCupom().getDesconto();
+            BigDecimal preco = subTotal;
+            BigDecimal fator = percentual.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP);
+            BigDecimal desconto = preco.multiply(fator);
+            preco = preco.subtract(desconto).setScale(2, RoundingMode.HALF_UP);
+            carrinho.setSubTotalDescontado(preco);
         }
 
         return subTotal;
