@@ -2,6 +2,8 @@ package api.loja.lotus.repository;
 
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +25,7 @@ public interface CupomRepository extends JpaRepository<Cupom, Long> {
             AND c.quantidade > 0
             """)
     int decrementarQuantidadeSeDisponivel(@Param("id") Long id);
+
+    Page<Cupom> findAllByQuantidadeGreaterThan(Integer quantidade, Pageable pageable);
+
 }

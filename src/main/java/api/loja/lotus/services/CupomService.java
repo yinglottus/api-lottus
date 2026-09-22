@@ -107,7 +107,22 @@ public class CupomService {
     @Transactional(readOnly = true)
     public Page<CupomResponseDTO> buscarTodosCupons(Pageable pageable) {
 
+        var usuario = usuarioLogado.usuarioLogado();
+
+        if (usuario.getRole() != RoleUser.ROLE_ADMIN) {
+            throw new BusinessException("Você não tem permissão de visualizar todos cupons!");
+        }
+        
         Page<Cupom> cupons = cupomRepository.findAll(pageable);
+
+        return cupons
+            .map(CupomResponseDTO::from);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CupomResponseDTO> buscarTodosCuponsUsuarios(Pageable pageable) {
+
+        Page<Cupom> cupons = cupomRepository.findAllByQuantidadeGreaterThan(0, pageable);
 
         return cupons
             .map(CupomResponseDTO::from);
