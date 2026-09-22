@@ -55,7 +55,6 @@ public class CupomController {
         return ResponseEntity.ok(cupomService.atualizarCupom(dto, cupomId));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/buscar/todos")
     public ResponseEntity<Page<CupomResponseDTO>> buscarTodosCupons(
         @PageableDefault(size = 12, sort = "quantidade") Pageable pageable
