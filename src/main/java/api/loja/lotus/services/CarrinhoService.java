@@ -1,6 +1,5 @@
 package api.loja.lotus.services;
 
-import api.loja.lotus.repository.CupomRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URLEncoder;
@@ -20,7 +19,6 @@ import api.loja.lotus.exceptions.BusinessException;
 import api.loja.lotus.exceptions.ResourceNotFound;
 import api.loja.lotus.mappers.CarrinhoMapper;
 import api.loja.lotus.models.Carrinho;
-import api.loja.lotus.models.Cupom;
 import api.loja.lotus.models.ItemCarrinho;
 import api.loja.lotus.models.Produto;
 import api.loja.lotus.models.Usuario;
@@ -36,7 +34,6 @@ import lombok.extern.slf4j.Slf4j;
 @Service 
 public class CarrinhoService {
     
-    private final CupomRepository cupomRepository;
     private final CarrinhoRepository carrinhoRepository;
     private final ProdutoRepository produtoRepository;
     private final ItemCarrinhoRepository itemCarrinhoRepository;

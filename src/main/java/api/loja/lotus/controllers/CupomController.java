@@ -54,7 +54,7 @@ public class CupomController {
     {
         return ResponseEntity.ok(cupomService.atualizarCupom(dto, cupomId));
     }
-
+    
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/buscar/todos")
     public ResponseEntity<Page<CupomResponseDTO>> buscarTodosCupons(
@@ -62,6 +62,14 @@ public class CupomController {
     ) 
     {
         return ResponseEntity.ok(cupomService.buscarTodosCupons(pageable));
+    }
+
+    @GetMapping("/buscar/usuarios")
+    public ResponseEntity<Page<CupomResponseDTO>> buscarTodosCuponsUsuarios(
+        @PageableDefault(size = 12, sort = "quantidade") Pageable pageable
+    ) 
+    {
+        return ResponseEntity.ok(cupomService.buscarTodosCuponsUsuarios(pageable));
     }
 
     @GetMapping("/me")
